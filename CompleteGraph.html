@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> /* set the CSS */
+
+body { font:  13px Arial;}
+
+/*  this sets the red border around the svg*/
+svg {
+		border:5px solid red;
+	}
+
+path { 
+    stroke: green;
+    stroke-width: 6;
+    fill: none;
+}
+
+.axis path,
+
+.axis line {
+    fill: none;
+    stroke: cyan;
+    stroke-width: 8;
+    shape-rendering: crispEdges;
+}
+
+</style>
+<body>
+
+<h3><center><p1> Welcome to the Data Virtualization of the Covid-19 Affected Counties</p1></center> </h3
+<h4><center><p1> Bar-chart representation of Galway, Dublin, Carlow, Westmeath, Cork, Kildare 14 days Rate.</p1></center></h4>
+<div id="option">
+
+	<input name="updateButton"
+		type="button"
+		value="Update"
+		onclick="updateData()"/>
+
+	<input name="Subcounty"
+		type="button"
+		value="sub"
+		onclick="subcounty()"/>
+		
+	<input name="RamdomCounty"
+		type="button"
+		value="Random County"
+		onclick="RamdomCounty()"/>
+		
+	<select id="County" onchange="SelectCounty()">
+		<option value="blank">Select County</option>
+		<option value="dublin">DUBLIN</option>
+		<option value="galway">GALWAY</option>	
+		<option value="westmeath">WESTMEATH</option> 
+		<option value="carlow">CARLOW</option>
+		<option value="cork">CORK</option>
+		<option value="kildare">KILDARE</option>
+	</select
+</div>
+ <p id="text" onchance="func()">
+    Click on the select county option to view and or change County 
+ </p>
+
+<!-- load the d3.js library -->    
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<script>
+ 
+function loadGraph(c){
+// Set the dimensions of the canvas / graph
+var margin = {top: 600, right: 30, bottom: 200, left: 50},
+    width = 1500- margin.left - margin.right,
+    height = 1100 - margin.top - margin.bottom;
+
+// Parse the date / time
+var parseDate = d3.time.format("%d-%b-%y").parse;
+var x = d3.scale.ordinal().rangeRoundBands([4,width],0.06);
+var y = d3.scale.linear().range([height,4]);
+var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(13);
+var yAxis = d3.svg.axis().scale(y).orient("left").ticks(13);
+var filteredData = [];
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom+25)
+  .append("g")
+    .attr("transform", 
+          "translate(" + margin.left + "," + margin.top + ")");
+d3.csv("data_for_covid.csv", function(error, data) {
+    data.forEach(function(d) {
+         if(d.county == c) {     
+             filteredData.push({county : d.county,C19_P14_T : d.C19_P14_T,ENGLISH: d.ENGLISH}) 
+		}
+    });
+	
+	 <!-- filteredData.forEach(function(d) { -->
+         <!-- if(d.county == c ){      -->
+             <!-- d.C19_P14_T+=d.C19_P14_T; -->
+			 <!-- //d.ENGLISH+=d.ENGLISH; -->
+		<!-- } -->
+    <!-- }); -->
+	console.log("data_for_covid.csv");
+	data= filteredData;
+	console.log(data);
+	
+
+  x.domain(data.map(function(d) { return d.ENGLISH; }));
+  y.domain([0, d3.max(data, function(d) { return d.C19_P14_T; })]);
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .selectAll("text")
+      .style("text-anchor", "end")
+      .attr("dx", "-.8em")
+      .attr("dy", "-.80em")
+      .attr("transform", "rotate(-90)" );
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      <!-- .attr("transform", "rotate(0)") -->
+      <!-- .attr("y", 6) -->
+      <!-- .attr("dy", ".75em") -->
+	  <!-- .attr("dx", ".70em") -->
+      .style("text-anchor", "center","bold")
+      .text("Bar-chart");
+	  svg.append("text")
+		.attr("x", (width / 2))
+		.attr("y", 0 - (margin.top / 2))
+		.attr("text-anchor", "middle")
+		.style("font-size", "45px")
+		.style("text-decoration", "underline")
+		.text("Bar-chart representation of 14 day incident rate");
+
+  svg.selectAll(".bar")
+      .data(data)
+    .enter().append("rect")
+	.transition() // Animation
+    .duration(1000)
+      .style("fill", "steelblue")
+      .attr("x", function(d) { return x(d.ENGLISH); })
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d.C19_P14_T); })
+      .attr("height", function(d) { return height - y(d.C19_P14_T); })
+	  .delay(function(d,i){console.log(i) ; return(i*100)})
+	 
+
+});
+}
+//loadGraph("DUBLIN");
+function func()
+{
+    document.getElementById("text").style.color="red";
+    document.getElementById("text").style.font="calibri";
+}
+function RamdomCounty() {
+d3.select("svg").remove();
+var index = Math.floor(Math.random() * 6) + 1 ;
+if(index == 1){
+loadGraph("DUBLIN");
+}
+else if (index == 2){
+loadGraph("GALWAY");
+}
+else if (index == 3){
+loadGraph("CARLOW");
+}
+else if (index == 4){
+loadGraph("CORK");
+}
+else if (index==5){
+loadGraph("WESTMEATH");
+}
+else if(index==6){
+loadGraph("KILDARE");
+}
+}
+function SelectCounty(){
+
+d3.select("svg").remove();
+
+
+var option = document.getElementById("County");
+var selectedOption = option.value;
+
+if(selectedOption == "dublin"){
+loadGraph("DUBLIN");
+
+}
+else if(selectedOption == "Cork"){
+loadGraph("CORK");
+}
+else if(selectedOption == "westmeath"){
+loadGraph("WESTMEATH");
+}
+else if(selectedOption == "galway"){
+loadGraph("GALWAY");
+}
+else if(selectedOption == "carlow"){
+loadGraph("CARLOW");
+}
+else if(selectedOption == "kildare"){
+loadGraph("KILDARE");
+}
+else {
+alert("Please select a county from the list");
+}
+}
+
+<!-- function subcounty(){ -->
+<!-- d3.csv("data_for_covid.csv", function(error, data) { -->
+    <!-- data.forEach(function(e) { -->
+         <!-- if(d.ENGLISH == f) {      -->
+             <!-- filteredData.push({county : d.county,C19_P14_T : d.C19_P14_T,ENGLISH: d.ENGLISH})  -->
+		<!-- } -->
+    <!-- }); -->
+
+<!-- console.log(data) -->
+
+</script>
+</body>
